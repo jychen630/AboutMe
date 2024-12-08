@@ -5,18 +5,18 @@ We utilized the SAEs trained on each layer of Llama-3.1-8B model, [technical det
 - Attention Output (A): The output of each attention layer inside the transformer block. (Denoted as $\Sigma_{h\in H_i} h(x_{i})$ in the below image)
 - MLP Output (M): The output of each MLP layer inside the transformer block. (Denoted as $m(x_{i})$ in the below image)
 
-![sae_positions_by_fudan](image-11.png)
+![sae_positions_by_fudan](assets/image-11.png)
 
 Caption: The three positions (mlp, attention and residual stream) in one transformer block. Original image is from NLP lab at Fudan University, who trained the LLaMa SAEs we are analyzing upon. The image is clipped from [their paper](https://arxiv.org/pdf/2410.20526).
 
-![sae_positions_by_anthropic](image-12.png)
+![sae_positions_by_anthropic](assets/image-12.png)
 
 Caption: The residual stream and its sub-components (attention and mlp) in one transformer block. Original image is from Anthropic blog, "[A Mathematical Framework for Transformer Circuits](https://transformer-circuits.pub/2021/framework/index.html)" (2021).
 
 
 Recalling the basic architecture of an SAE, it consisted of an encoder mapping from a matrix of activation values to a sparse vector of dimension $d$; then a ReLU activation function applied to the sparse vector; finally a decoder mapping from the sparse vector to another matrix of activation values. Below is a simple diagram for understanding. as reference The sparse vector is an encoded representation of the input activation values. The second matrix of activation values is the "reconstructed" version of original matrix. 
 
-![simple_sae_diagram](image-13.png)
+![simple_sae_diagram](assets/image-13.png)
 
 Caption: Diagram of a sparse autoencoder. Note that the intermediate activations are sparse, with only 2 nonzero values. Note that a relu function should be applied to the sparse vector, before applying the decoder, which is not shown in the diagram.The original image is from Adam Karvonen's blog, "[An Intuitive Explanation of Sparse Autoencoders for LLM Interpretability](https://adamkarvonen.github.io/machine_learning/2024/06/11/sae-intuitions.html)".
 
@@ -73,11 +73,11 @@ activation values: [0, 0, 0, 0, 0, 0.5, 0.6, 0.3, 0, 0.1]
 masked activation values: [0, 0, 0, 0, 0, 0, 0, 0.3, 0, 0]
 ```
 
-![pipeline1_generating_feature_matrix](image-14.png)
+![pipeline1_generating_feature_matrix](assets/image-14.png)
 
 Caption: The pipeline generating the feature matrix at applying SAE with humor prompts.
 
-![pipeline2_fetching_tokens](image-15.png)
+![pipeline2_fetching_tokens](assets/image-15.png)
 Caption: The pipeline fetching the tokens corresponding to the (large) activation values, continuing from the previous figure.
 
 
@@ -90,14 +90,14 @@ The majority (17/20) is about kids or childhood.
 
 [leprechaun, circus\*5, bedtime, mommy, picnic, (break)dance, clown, (marsh)mallow, musical, (ch)ihu(ah)ua, (kind)ergarten, (sleep)over]
 
-![l7r_32x_1216](image-1.png)
+![l7r_32x_1216](assets/image-1.png)
 
 ### Layer 7, Residual Stream, 32x expansion factor (i.e out of 128k features), feature id 9920
 All (20/20) about sex/sexual activities/sexual organs/sexual connotations
 
 [bed, (sexual )toy, (cop)ulate, urinate, (test)icles, (haemorh)oid, (s)perm, bra, underwear, diarrhea, brothel, grope, diaper, anal]
 
-![l7r_32x_9920](image-2.png)
+![l7r_32x_9920](assets/image-2.png)
 
 ### Layer 7, Residual Stream, 32x expansion factor (i.e out of 128k features), feature id 14080
 
@@ -105,7 +105,7 @@ Half (10/20) about animals.
 
 [puppy\*2, puppies, chimpan(ze)es, (par)rots, (plat)ypus\*2, (uni)corns, (deodor)ant, monkeys]
 
-![l7r_32x_14080](image-3.png)
+![l7r_32x_14080](assets/image-3.png)
 
 ### Layer 23, Attention Output, 8x expansion factor (i.e out of 32k features), feature id 13056 
 
@@ -113,39 +113,39 @@ More than half (12/20) about beautfy and fashion.
 
 [wife, haircut\*2, cactus, hair, shampoo, (compl)iment, underwear, mom, fashion, barber, hairdo]
 
-![l23a_8x_13056](image-4.png)
+![l23a_8x_13056](assets/image-4.png)
 
 ### Layer 31, Attention Output, 8x expansion factor (i.e out of 32k features), feature id 5696
 
 Weakly, nearly half (9/20) about health or bodily functions.
 
 [urinate, (nut)ritionist, (g)ynecologist\*2, sneeze\*2, moustache, testicles, tanning]
-![l31a_8x_5696](image-5.png)   
+![l31a_8x_5696](assets/image-5.png)   
 
 ### Layer 23, Residual Stream, 32x expansion factor (i.e out of 128k features), feature id 6528
 
 All (20/20) words started with character "c" - though not indicate any semantics.
 
-![l23r_32x_6528](image-6.png)
+![l23r_32x_6528](assets/image-6.png)
 
 ### Layer 15, Residual Stream, 32x expansion factor (i.e out of 128k features), feature id 13952
 
 All (20/20) words started with character "s" - though not indicate any semantics.
 
-![l15r_32x_13952](image-7.png)
+![l15r_32x_13952](assets/image-7.png)
 
 ### Layer 15, Residual Stream, 32x expansion factor (i.e out of 128k features), feature id 6272
 
 All (20/20) words ended with character "ing" - though not indicate any semantics.
 
-![l15r_32x_6272](image-8.png)
+![l15r_32x_6272](assets/image-8.png)
 
 ### Layer 15, Residual Stream, 32x expansion factor (i.e out of 128k features), feature id 8000
 
 The majority (16/20) about bodily functions.
 
 [beard, elbow, hair\*6, ponytail, hairstyle\*2, haircut\*2, (e)ars, toupee, hairdo ]
-![l15r_32x_8000](image-16.png)
+![l15r_32x_8000](assets/image-16.png)
 
 ### Layer 7, MLP Output, 32x expansion factor (i.e out of 128k features), feature id 8448
 
@@ -153,7 +153,7 @@ All (20/20) about food, though one of them is actually *ham*ster* with *ham* com
 
 [muffin, marshmallow\*2, spaghetti, (bur)ritos, taco, (rut)abages, tacos\*2, cheeseburgers, hamster, (w)affle, noodles, bacon, (del)i, pancakes, nut, (dough)nut]
 
-![l7m_32x_8448](image-10.png)
+![l7m_32x_8448](assets/image-10.png)
 
 
 
@@ -166,5 +166,5 @@ All (20/20) about food, though one of them is actually *ham*ster* with *ham* com
 
 
 frequent scripts that induce humor
-![humor_scripts](image-9.png)
+![humor_scripts](assets/image-9.png)
 semeval microedit article : https://arxiv.org/pdf/1906.00274    
