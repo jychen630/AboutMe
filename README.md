@@ -90,19 +90,19 @@ Below we describe the process ot getting the dashboards. Note that the process i
 An activation value in the feature matrix corresponds to a token from the prompt. (Please look at the below pipeline figure to understand the details.) We masked out the activation values whose position are not in the edited text.
 
 ```
-## First generate the mask (using two points: left sweep and right sweep and then sandwiched)
-sentence_tokens_original (decoded): ['Royal', ' wedding', ' :', ' Meg', 'han', " '", 's', ' dress', ' in', ' detail']
-sentence_tokens_original (len 10) [38702 11812  1146 18158  5418   684    85  7417   276  2429]
-sentence_tokens_edited (decoded): ['Royal', ' wedding', ' :', ' Meg', 'han', " '", 's', ' elbow', ' in', ' detail']
-sentence_tokens_edited (len 10) [38702 11812  1146 18158  5418   684    85 23984   276  2429]
-mask (len 10): [False, False, False, False, False, False, False, True, False, False]
+## First generate the mask (using two pointers: left pointer sweeps forward and right pointer sweeps backward and then sandwiched)
+original (decoded): ['F', 'BI', ' Ra', 'ids', ' Office', ' Of', ' Trump', ' Law', 'yer', ' Michael', ' Cohen', ' :', ' Report']
+original (len 13) [   40  5988 11291  2280  7258  4539  3653  5245  7678  6105 18981  1146 10557]
+edited (decoded): ['F', 'BI', ' Red', 'ec', 'or', 'ates', ' Office', ' Of', ' Trump', ' Law', 'yer', ' Michael', ' Cohen', ' :', ' Report']
+edited (len 15) [   40  5988  4270   878   264   682  7258  4539  3653  5245  7678  6105 18981  1146 10557]
+mask (len 15): [False, False, True, True, True, True, False, False, False, False, False, False, False, False, False]
 
 ## Apply mask to activation values
-mask: [False, False, False, False, False, False, False, True, False, False]
+mask: [False, False, True, True, True, True, False, False, False, False, False, False, False, False, False]
 +
-activation values: [0, 0, 0, 0, 0, 0.5, 0.6, 0.3, 0, 0.1]
+activation values: [0, 0.3, 0.5, 0.6, 0.1, 0, 0, 0, 0.2, 0.9, 0, 0, 0, 0, 0]
 =
-masked activation values: [0, 0, 0, 0, 0, 0, 0, 0.3, 0, 0]
+masked activation values: [0, 0, 0.5, 0.6, 0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ```
 
 ![pipeline1_generating_feature_matrix](assets/image-14.png)
