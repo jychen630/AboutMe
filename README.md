@@ -49,9 +49,9 @@ Recalling the basic architecture of an SAE, it consisted of an encoder mapping f
 
 ![simple_sae_diagram](assets/image-13.png)
 
-Caption: Diagram of a sparse autoencoder. Note that the intermediate activations are sparse, with only 2 nonzero values. Note that a relu function should be applied to the sparse vector, before applying the decoder, which is not shown in the diagram.The original image is from Adam Karvonen's blog, "[An Intuitive Explanation of Sparse Autoencoders for LLM Interpretability](https://adamkarvonen.github.io/machine_learning/2024/06/11/sae-intuitions.html)".
+Caption: Diagram of a sparse autoencoder. The intermediate activations are sparse, with only 2 nonzero values. Note that a relu function should be applied to the sparse vector, before applying the decoder, which is not shown in the diagram.The original image is from Adam Karvonen's blog, "[An Intuitive Explanation of Sparse Autoencoders for LLM Interpretability](https://adamkarvonen.github.io/machine_learning/2024/06/11/sae-intuitions.html)".
 
-The authors who trained the llama SAEs picked $d$ to be a multiple of the hidden dimension of the hidden layer of the llama model. This constant factor, also called the *expansion factor* is 8 or 32 for each SAE. Specifically, by llama architecture, the input activation dimension is 4096, and the SAE’s encoded representation is a vector of length 32k (4096 x 8) or 128k (4096 x 32). Further take the expansion factor of 8 as an example. The encoder, i.e a matrix, is of shape (4096, 4096\*8) and the decoder, i.e another matrix, is of shape (4096\*8, 4096). Note that the second input shape and output shape are the same, both are of 4096, which is again by design of SAE that aims to reconstruct the original activation values.
+The authors who trained the llama SAEs picked $d$ to be a multiple of the hidden dimension of the hidden layer of the llama model. This constant factor, also called the *expansion factor* is 8 or 32 for each SAE. Specifically, by llama architecture, the input activation dimension is 4096, and the SAE’s encoded representation is a vector of length 32k (4096 x 8) or 128k (4096 x 32). Further take the expansion factor of 8 as an example. The encoder, i.e a matrix, is of shape (4096, 4096\*8) and the decoder, i.e another matrix, is of shape (4096\*8, 4096). Note that the encoder's input shape and decoder's output shape are the same, both are of 4096, which is again by design of SAE that aims to reconstruct the original activation values.
 
 \~footnote{During SAE training, the loss was designed to encourage the sparsity of the vector (i.e, very few values out of $d$ values are non-zero), and encourage the reconstructed matrix to be as close as possible to the original matrix. The sparsity loss is an L1 loss, summing over all the elements in the vector. The reconstruction loss is an L2 loss, summing over the error between each individual element between the original and reconstructed matrices.}
 
@@ -69,7 +69,7 @@ Llama-3.1-8B consists of 32 layers, resulting in 96 (32 \* 3) possible training 
 
 
 
-Each SAE's activation output were obtained when feeding the humicroedit data ([huggingface handle](https://huggingface.co/datasets/SemEvalWorkshop/humicroedit), [original paper with useful stats](https://arxiv.org/pdf/1906.00274)), subtask-1. Each item, quoted below, consists of an original sentence with the edited position marked by `</>`, the edited word, and the 5 grades provided by human annotators. Higher mean grade (with max of 3, min of 1) indicates the sentence is "funnier". \~footnote{I'm personally not certain how to define "funniess", nor do I know how to map the sense of funniness to a numeric score. My intuition is that these edited sentences induce laughs from easier to harder, less to more mental efforts, or semantically, larger to small semantic/conceptual jumps. (A personal heuristic is that if there is no single-side strong feeling toward the thing, I may rate as 2. Otherwise I rate 1 or 3 correspondingly. Many times I was asked to rate a certain event on a scale from 1 to 5, I usually just throw a random number between 2 to 4 if I dont have strong feelings. It would be harder to rate on a scale from 1 to 10, as it's harder to articulate a more granular feeling numerically.)}
+Each SAE's activation output were obtained when feeding the humicroedit data ([huggingface handle](https://huggingface.co/datasets/SemEvalWorkshop/humicroedit), [original paper with useful stats](https://arxiv.org/pdf/1906.00274)), originall from SemEval-2020 task 7 (assessing humor in edited news headlines), subtask-1 (given the original and the edited headline, predict the mean funniness of the edited headline). Each item, quoted below, consists of an original sentence with the edited position marked by `</>`, the edited word, and the 5 grades provided by human annotators. Higher mean grade (with max of 3, min of 1) indicates the sentence is "funnier". \~footnote{I'm personally not certain how to define "funniess", nor do I know how to map the sense of funniness to a numeric score. My intuition is that these edited sentences induce laughs from easier to harder, less to more mental efforts, or semantically, larger to small semantic/conceptual jumps. (A personal heuristic is that if there is no single-side strong feeling toward the thing, I may rate as 2. Otherwise I rate 1 or 3 correspondingly. Many times I was asked to rate a certain event on a scale from 1 to 5, I usually just throw a random number between 2 to 4 if I dont have strong feelings. It would be harder to rate on a scale from 1 to 10, as it's harder to articulate a more granular feeling numerically.)}
 
 ```
 {
@@ -85,7 +85,7 @@ Among these humicroedit data, we filtered out the items with meanGrade less than
 
 ## Visualize the features & corresponding tokens
 
-Below we describe the process ot getting the dashboards. Note that the process is done the same **for each feature** (at a position {a,m,r}, at a layer {0..31}, at an expansion factor {8x,32x}) **for each SAE**. (Toolings: [sae_dashboard](https://github.com/jychen630/sae_dashboard/commits/master/), [sae_vis](https://github.com/jychen630/sae_vis_study_notes))
+Below we describe the process ot getting the dashboards. Note that the process is done the same **for each feature** (at a position {a,m,r}, at a layer {0..31}, at an expansion factor {8x,32x}) **for each SAE**. (Toolings: [sae_dashboard (with my adaptations)](https://github.com/jychen630/sae_dashboard/commits/master/), [sae_vis](https://github.com/jychen630/sae_vis_study_notes), previous both leverages [sae_lens](https://github.com/jbloomAus/SAELens))
 
 An activation value in the feature matrix corresponds to a token from the prompt. (Please look at the below pipeline figure to understand the details.) We masked out the activation values whose position are not in the edited text.
 
@@ -116,6 +116,7 @@ Caption: The pipeline fetching the tokens corresponding to the (large) activatio
 We first sorted by their activation density, which is defined to be the number of non-zero values divided by the total number of values. For those features with activation density greater than 0.01, we stream the corresponding 20 centered tokens and their neighboring tokens to dashboard. So on dashboards, you should see a dropdown list, with first item the largest activation density. The number on the dropdown list of each feature is simply an index generated programmatically, which doesn't mean anything. Note that the sentences are concatenated together, so the analysis is done on a corpus level, and you should see some `<endoftext>` in the middle of the sentences.
 
 We manually inspected the highlighted edited words for each feature for each SAE in a previously table shown with green ticks, starting from the feature with the highest activation density. Here we displayed several strong features manually found.
+
 
 ### Layer 7, Residual Stream, 32x expansion factor (i.e out of 128k features), feature id 1216
 The majority (17/20) is about kids or childhood.
@@ -154,6 +155,26 @@ Weakly, nearly half (9/20) about health or bodily functions.
 [urinate, (nut)ritionist, (g)ynecologist\*2, sneeze\*2, moustache, testicles, tanning]
 ![l31a_8x_5696](assets/image-5.png)   
 
+
+### Layer 15, Residual Stream, 32x expansion factor (i.e out of 128k features), feature id 8000
+
+The majority (16/20) about bodily functions.
+
+[beard, elbow, hair\*6, ponytail, hairstyle\*2, haircut\*2, (e)ars, toupee, hairdo ]
+![l15r_32x_8000](assets/image-16.png)
+
+### Layer 7, MLP Output, 32x expansion factor (i.e out of 128k features), feature id 8448
+
+All (20/20) about food, though one of them is actually *ham*ster* with *ham* comes with higher activation value.
+
+[muffin, marshmallow\*2, spaghetti, (bur)ritos, taco, (rut)abages, tacos\*2, cheeseburgers, hamster, (w)affle, noodles, bacon, (del)i, pancakes, nut, (dough)nut]
+
+![l7m_32x_8448](assets/image-10.png)
+
+---
+
+Below are some unrelated features found, just to throw some here, not indicate any semantics though
+
 ### Layer 23, Residual Stream, 32x expansion factor (i.e out of 128k features), feature id 6528
 
 All (20/20) words started with character "c" - though not indicate any semantics.
@@ -172,24 +193,26 @@ All (20/20) words ended with character "ing" - though not indicate any semantics
 
 ![l15r_32x_6272](assets/image-8.png)
 
-### Layer 15, Residual Stream, 32x expansion factor (i.e out of 128k features), feature id 8000
 
-The majority (16/20) about bodily functions.
+## Subjectivity in concept extraction
+If our goal is to, say, find concepts that are singular in nature, distinct and non-combinatorial, rather tan mixed or overlapping with multiple unrelated ideas, the short answer is yes, there are a few you can pick. The majority of the top features are combinatorial. One may see half of the highlighted edited words is 'related to sex' , 14 with 'food' and the rest about random concepts from a top feature with 20 sentences displayed on the dashboard. It's subjective in concept extraction: the identification may vary between individuals. What I interpret as ‘combination of concepts' can be seen differently by another person, who would extract a singular concepts out of that.
 
-[beard, elbow, hair\*6, ponytail, hairstyle\*2, haircut\*2, (e)ars, toupee, hairdo ]
-![l15r_32x_8000](assets/image-16.png)
+Relevantly, we wonder in anthropic's work "[Scaling Monosemanticity](https://transformer-circuits.pub/2024/scaling-monosemanticity/), do they manually extract the concepts out of the sentences? Also, in this display, did they manually throw away some other sentences that are not highly relevant to 'canada' out of many candidate aggregated sentences? Let say we have 20 sentences on the dashboard, 17 out of 20 are about animals, and 3 about food, in the final representation when we brag the result to someone else, can we throw away the 3 and then claim this group is an 'animal' group?
 
-### Layer 7, MLP Output, 32x expansion factor (i.e out of 128k features), feature id 8448
+![rwanda_canada](assets/image-17.png)
 
-All (20/20) about food, though one of them is actually *ham*ster* with *ham* comes with higher activation value.
+Caption: Country features by Anthropic.
 
-[muffin, marshmallow\*2, spaghetti, (bur)ritos, taco, (rut)abages, tacos\*2, cheeseburgers, hamster, (w)affle, noodles, bacon, (del)i, pancakes, nut, (dough)nut]
+![famous_people](assets/image-18.png)
 
-![l7m_32x_8448](assets/image-10.png)
+Caption: Famous people features by Anthropic.
+
+In humicroedit data [paper](https://arxiv.org/pdf/1906.00274), see the table caption - the categories are also very subjective. these concepts are one slice/lens out of all concepts in the universe. \~footnote{I think in my mind in general, it's quite intriguing to do a "concept identification/extraction" task}
+
+![humor_scripts](assets/image-9.png)
 
 
-
-## Lots of floating questions regarding the SAE + Humor direction given current results
+## Floating questions regarding the SAE + Humor direction given current results
 
 0. Can trian a simple classifier on the activation values for edited and original, suggested by Zach? TODO.
 1. Can the absolute values of activation values from SAE tell us anything?
