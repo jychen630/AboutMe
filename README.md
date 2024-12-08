@@ -65,7 +65,7 @@ Llama-3.1-8B consists of 32 layers, resulting in 96 (32 \* 3) possible training 
 | MLP Output (M)       | 8x               |         |          |          |          |          |          |
 |                      | 32x              | ✅[link](https://jychen630.github.io/llama_vis/feature_llama_masked_l7m_32x.html)       | ✅[link](https://jychen630.github.io/llama_vis/feature_llama_masked_l15m_32x.html)        |          | ✅[link](https://jychen630.github.io/llama_vis/feature_llama_masked_l23m_32x.html)        |          | ✅[link](https://jychen630.github.io/llama_vis/feature_llama_masked_l31m_32x.html)        |
 | Residual Stream (R)  | 8x               |         |          |          |          |          |          |
-|                      | 32x              | ✅[link](https://jychen630.github.io/llama_vis/feature_llama_masked_l7r_32x.html)       | ✅[link](https://jychen630.github.io/llama_vis/feature_llama_masked_l15r_32x.html)        |          | ✅[link](https://jychen630.github.io/llama_vis/feature_llama_masked_l23r_32x.html)        |          | ✅[link]    (https://jychen630.github.io/llama_vis/feature_llama_masked_l31r_32x.html)        |
+|                      | 32x              | ✅[link](https://jychen630.github.io/llama_vis/feature_llama_masked_l7r_32x.html)       | ✅[link](https://jychen630.github.io/llama_vis/feature_llama_masked_l15r_32x.html)        |          | ✅[link](https://jychen630.github.io/llama_vis/feature_llama_masked_l23r_32x.html)        |          | ✅[link](https://jychen630.github.io/llama_vis/feature_llama_masked_l31r_32x.html)        |
 
 
 
