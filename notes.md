@@ -1,4 +1,35 @@
+## Objective
+When we started the SAE + humor data analysis, our objective is to identify features (singly, not combinations of features) that can be in aligned with the commonly seen humor topics. Inspired by Raskin's [Script-Based Semantic Theory of Humour (SSTH)](https://jonathansandling.com/script-based-semantic-theory-of-humour/), at the time we see some semantic categories where jokes occur:
+ 
+- Actual (Non-Actual)
+- Normal (Abnormal)
+- Possible (Impossible)
+- Good (Bad)
+- Life (Death)
+- Obscene (Non-Obscene)
+- Money (No-Money)
+- High Stature (Low Stature)
 
+Looking at the humicroedit data statistics (summarized by the author, picked from their [paper](https://arxiv.org/pdf/1906.00274)), we further concretize the categories:
+- Clothing
+- Sexuality
+- Food
+- Fantasy
+- Performance
+- Bodily Function
+- Animals
+- Formality
+
+![humor_scripts](assets/image-9.png)
+
+Caption: The statistics of the humicroedit data, with the categories of humor scripts.
+
+
+With sparse autoencoders popular for its ability of mechanistic interpretibility in analyzing model's layers, our objecitve is to see whether the activation values output from SAEs can have some correlation with the humorous topics. 
+
+
+
+## Sparse Autoencoders and some technicalities
 
 We utilized the SAEs trained on each layer of Llama-3.1-8B model, [technical details](https://arxiv.org/pdf/2410.20526) provided by the NLP Lab at Fudan University. These SAEs were trained on text data sampled from [SlimPajama (Soboleva et al., 2023)](https://cerebras.ai/blog/slimpajama-a-627b-token-cleaned-and-deduplicated-version-of-redpajama) with the proportions of each subset (e.g., Commoncrawl, C4, Github, Books, Arxiv, StackExchange) preserved. There are three positions in a transformer block on which the SAE were trained, specifically:
 - Post-MLP Residual Stream (R): The residual stream output of the transformer block at a layer. (Denoted as $x_{i+2}$ in the below image)
@@ -29,16 +60,16 @@ Llama-3.1-8B consists of 32 layers, resulting in 96 (32 \* 3) possible training 
 
 | Position             | Expansion Factor | Layer 7 | Layer 15 | Layer 16 | Layer 23 | Layer 24 | Layer 31 |
 |----------------------|------------------|---------|----------|----------|----------|----------|----------|
-| Attention Output (A) | 8x               | ✅       | ✅        | ✅        | ✅        | ✅        | ✅        |
-|                      | 32x              | ✅       | ✅        | ✅        | ✅        | ✅        | ✅        |
+| Attention Output (A) | 8x               | ✅[link](llama_vis/feature_llama_masked_l7a_8x.html)       | ✅[link](llama_vis/feature_llama_masked_l15a_8x.html)        | ✅[link](llama_vis/feature_llama_masked_l16a_8x.html)        | ✅[link](llama_vis/feature_llama_masked_l23a_8x.html)        | ✅[link](llama_vis/feature_llama_masked_l24a_8x.html)        | ✅[link](llama_vis/feature_llama_masked_l31a_8x.html)        |
+|                      | 32x              | ✅[link](llama_vis/feature_llama_masked_l7a_32x.html)       | ✅[link](llama_vis/feature_llama_masked_l15a_32x.html)        | ✅[link](llama_vis/feature_llama_masked_l16a_32x.html)        | ✅[link](llama_vis/feature_llama_masked_l23a_32x.html)        | ✅[link](llama_vis/feature_llama_masked_l24a_32x.html)        | ✅[link](llama_vis/feature_llama_masked_l31a_32x.html)        |
 | MLP Output (M)       | 8x               |         |          |          |          |          |          |
-|                      | 32x              | ✅       | ✅        |          | ✅        |          | ✅        |
+|                      | 32x              | ✅[link](llama_vis/feature_llama_masked_l7m_32x.html)       | ✅[link](llama_vis/feature_llama_masked_l15m_32x.html)        |          | ✅[link](llama_vis/feature_llama_masked_l23m_32x.html)        |          | ✅[link](llama_vis/feature_llama_masked_l31m_32x.html)        |
 | Residual Stream (R)  | 8x               |         |          |          |          |          |          |
-|                      | 32x              | ✅       | ✅        |          | ✅        |          | ✅        |
+|                      | 32x              | ✅[link](llama_vis/feature_llama_masked_l7r_32x.html)       | ✅[link](llama_vis/feature_llama_masked_l15r_32x.html)        |          | ✅[link](llama_vis/feature_llama_masked_l23r_32x.html)        |          | ✅[link](llama_vis/feature_llama_masked_l31r_32x.html)        |
 
 
 
-Each SAE's activation output were obtained when feeding the humicroedit data ([huggingface](https://huggingface.co/datasets/SemEvalWorkshop/humicroedit), [original paper with useful stats](https://arxiv.org/pdf/1906.00274)), subtask-1. Each item, quoted below, consists of an original sentence with the edited position marked by `</>`, the edited word, and the 5 grades provided by human annotators. Higher mean grade (with max of 3, min of 1) indicates the sentence is "funnier". \~footnote{I'm personally not certain how to define "funniess", nor do I know how to map the sense of funniness to a numeric score. My intuition is that these edited sentences induce laughs from easier to harder, less to more, or semantically, larger to small semantic/conceptual jumps. (A personal heuristic is that if there is no single-side strong feeling toward the thing, I may rate as 2. Otherwise I rate 1 or 3 correspondingly. Many times I was asked to rate a certain event on a scale from 1 to 5, I usually just throw a random number between 2 to 4 if I dont have strong feelings. It would be harder to rate on a scale from 1 to 10, as it's harder to articulate a more granular feeling numerically.)}
+Each SAE's activation output were obtained when feeding the humicroedit data ([huggingface handle](https://huggingface.co/datasets/SemEvalWorkshop/humicroedit), [original paper with useful stats](https://arxiv.org/pdf/1906.00274)), subtask-1. Each item, quoted below, consists of an original sentence with the edited position marked by `</>`, the edited word, and the 5 grades provided by human annotators. Higher mean grade (with max of 3, min of 1) indicates the sentence is "funnier". \~footnote{I'm personally not certain how to define "funniess", nor do I know how to map the sense of funniness to a numeric score. My intuition is that these edited sentences induce laughs from easier to harder, less to more, or semantically, larger to small semantic/conceptual jumps. (A personal heuristic is that if there is no single-side strong feeling toward the thing, I may rate as 2. Otherwise I rate 1 or 3 correspondingly. Many times I was asked to rate a certain event on a scale from 1 to 5, I usually just throw a random number between 2 to 4 if I dont have strong feelings. It would be harder to rate on a scale from 1 to 10, as it's harder to articulate a more granular feeling numerically.)}
 
 ```
 {
@@ -52,7 +83,8 @@ Each SAE's activation output were obtained when feeding the humicroedit data ([h
 
 Among these humicroedit data, we filtered out the items with meanGrade less than or equal to 2. The remaining data out of 9652 items is 630 (only 6.5% of them are considered quite funny!).
 
-## Title needed
+## Visualize the features & corresponding tokens
+
 Below we describe the process ot getting the dashboards. Note that the process is done the same **for each feature** (at a position {a,m,r}, at a layer {0..31}, at an expansion factor {8x,32x}) **for each SAE**.
 
 An activation value in the feature matrix corresponds to a token from the prompt. (Please look at the below pipeline figure to understand the details.) We masked out the activation values whose position are not in the edited text.
@@ -157,14 +189,11 @@ All (20/20) about food, though one of them is actually *ham*ster* with *ham* com
 
 
 
-## Lots of questions regarding the SAE + Humor direction
+## Lots of floating questions regarding the SAE + Humor direction given current results
 
-- 
-
-
-
-
-
-frequent scripts that induce humor
-![humor_scripts](assets/image-9.png)
-semeval microedit article : https://arxiv.org/pdf/1906.00274    
+0. Can trian a simple classifier on the activation values for edited and original, suggested by Zach? TODO.
+1. Can the absolute values of activation values from SAE tell us anything?
+2. Out of many features (imagine 192 candidates, with each we picked a handful of top features, there can be a thousand of them), how do we (a) efficiently identify semantic concepts; (b) for those that represent a combination of concepts (not just single concept like I displayed above), do they tell us anything meaningful, or how are we entitled to throw them away?
+3. A discussion on explanability: Given that the 630 sentences with meanGrade > 2.0 in our dataset are haevily clustered around the topics in [clothes and fashion, sex, food, eating, fantasy characters, music and shows, bodily functions, animals, jobs and roes...] (stats provided by the data collector), the highlighted words will *naturally* fall within these. We neither dont have the evidence (yet) to say the non-highlighted words do not fall into these topics and thus imply that they may not induce humor; nor we have the evidence to say the highlighted words are the only ones that induce humor. Additionally, we throwed away sentences with meanGrade <= 2.0, which consist of 93%+ of the data. We dont have SAE analysis at these data either. Right now we only do a non-rigorous sanity check, saying that *there might exist some features that perhaps related to humorous text*, neither sufficiently nor necessarily.
+4. A discussion regarding to the generalizability of the features found, in addition to the explanability above: let say we find a particular strong feature, $f$, so what? Can it generalize to other texts? If so, how to verify that? Also, can we find more strong, generalizable features, given one successful instance $f$?
+5. Recall that our SAE utilized are originally trained on SlimPajama dataset, with proportions of each subset (e.g., Commoncrawl, C4, Github, Books, Arxiv, StackExchange) preserved. How should I think about the influence that these datasets trained on will have on the features found, and on the humor-related features found?
